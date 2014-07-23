@@ -1,0 +1,6 @@
+name = Nodes Forcontu
+description = An example of advanced uses of the menu APIs Nodes
+package = My modules
+core = 7.x
+files[] = nodes_forcontu.module
+files[] = nodes_forcontu.install

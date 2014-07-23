@@ -1,0 +1,211 @@
+<?php
+/**
+* @file
+* Módulo Node Expiration Date
+* Este módulo permite añadir una fecha de caducidad a los nodos.
+*/
+
+/**
+* Implements hook_help().
+*/
+function node_expiration_date_help($path, $arg) {
+	switch ($path) {
+	// Ayuda general para el módulo Node Expiration Date
+	case 'admin/help#node_expiration_date':
+		return '<p>' . t('This module permits to add an expiration date to any content in the site. The administrator can configure which content types could have an expiration date.') . '</p>';
+	}
+}
+	
+/**
+* Implements hook_menu().
+*/
+function node_expiration_date_menu() {
+$items['admin/config/workflow/node_expiration_date'] = array(
+	'title' => 'Node Expiration Date settings',
+	'description' => 'Settings for module Node Expiration Date',
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array('node_expiration_date_admin_settings'),
+	'access callback' => 'user_access',
+	'access arguments' => array('administer site configuration'),
+	'type' => MENU_NORMAL_ITEM,
+	'file' => 'node_expiration_date.admin.inc',
+	);
+	return $items;
+}
+
+/**
+* Implements hook_form_alter().
+**/
+function node_expiration_date_form_alter(&$form, &$form_state, $form_id) {
+	//Modificación del formulario de creación de "página".
+	if($form_id == 'page_node_form'){
+	
+		 $form['node_expiration_date'] = array(
+         '#type' => 'fieldset',
+         '#title' => t('Node expiration date'),
+         '#collapsible' => TRUE,
+         '#collapsed' => FALSE,
+      );
+			
+			$form['node_expiration_date']['active'] = array(
+         '#type' => 'checkbox',
+         '#title' => t('Check if you want to active the expiration date for this node?'),
+				 //Para poder asignar $form['#node']->activate al valor por defecto del campo el hook_node_load debe estar correctamente implementado.
+				 '#default_value' => isset($form['#node']->active) ? 1 : 0,
+      );
+			
+			$expiration_date_default = array('year' => 2020, 'month' => 12, 'day' => 31);
+			
+			$form['node_expiration_date']['expiration_date'] = array(
+         '#type' => 'date',
+         '#title' => t('Expiration date'),
+         //Para que el operador de comparación funcione correctamente el hook_node_load debe estar correctamente implementado.
+				 '#default_value' => isset($form['#node']->active) ? $form['#node']->expiration_date : $expiration_date_default,
+      );	
+	}
+}
+
+/**
+* Implements hook_node_insert().
+*/
+function node_expiration_date_node_insert($node) {
+	if (isset($node->active)) {
+			
+			
+		//Sólo se inserta si el nodo tiene activada la opción de activación de fecha de expiración.
+		if ($node->active) {
+			db_insert('node_expiration_date')
+				->fields(
+						array(
+							'nid' => $node->nid,
+							'expiration_date' => mktime(0, 0, 0, $node->expiration_date['month'],$node->expiration_date['day'],$node->expiration_date['year']),
+						)
+					)
+				->execute();
+		}
+	}
+}
+
+/**
+* Implements hook_node_update().
+*/
+function node_expiration_date_node_update($node) {
+	if (isset($node->active)) {
+	
+	//1. Actualización de un nodo que tiene activada la opción de "Activar fecha de expiración".
+		
+		if ($node->active) {
+		
+			//1.1. Si el nodo no existe en la tabla 'node_expiration_date' hay que insertarlo.
+			
+			$result=db_select('node_expiration_date','n')
+				->fields('n', array('nid'))
+				->condition('nid', $node->nid, '=')
+				->execute()
+				->fetchAll();
+			
+			if (count($result)==0){
+				db_insert('node_expiration_date')
+				->fields(
+						array(
+							'nid' => $node->nid,
+							'expiration_date' => mktime(0, 0, 0, $node->expiration_date['month'],$node->expiration_date['day'],$node->expiration_date['year']),
+						)
+					)
+				->execute();
+			}
+			else {
+				
+				//1.2. Si el nodo ya existía en la tabla 'node_expiration_date' sólo se actualiza la fecha de expiración.
+				
+				db_update('node_expiration_date')
+				->fields(
+						array(
+							'expiration_date' => mktime(0, 0, 0, $node->expiration_date['month'],$node->expiration_date['day'],$node->expiration_date['year']),
+						)
+					)
+				->condition('nid', $node->nid, '=')
+				->execute();
+			}
+		}
+		
+		//2. Actualización de un nodo que tiene desactivada la opción de "Activar fecha de expiración".
+	
+		else {
+		
+			//2.1. Si el nodo tenía marcada la opción de "Activar fecha de expiración" y ésta se deshabilitó en la edición, hay que eliminar el registro de la tabla 'node_expiration_date'.
+			
+			$result=db_select('node_expiration_date','n')
+				->fields('n', array('nid'))
+				->condition('nid', $node->nid, '=')
+				->execute()
+				->fetchAll();
+			
+			if (count($result)>0){
+				db_delete('node_expiration_date')
+					->condition('nid', $node->nid)
+					->execute();
+			}
+		}
+	}
+}
+
+/**
+* Implements hook_node_delete().
+*/
+function node_expiration_date_delete($node) {
+	//Si el nodo se encuentra en la tabla "node_expiration_date" se elimina su entrada de la tabla.
+	$result=db_select('node_expiration_date','n')
+		->fields('n', array('nid'))
+		->condition('nid', $node->nid, '=')
+		->execute()
+		->fetchAll();
+		
+	if (count($result)>0) {
+		db_delete('node_expiration_date')
+		->condition('nid', $node->nid)
+		->execute();
+	}
+}
+
+/**
+* Implements hook_node_load().
+*/
+function node_expiration_date_node_load($nodes, $types) {
+	$result = db_select('node_expiration_date','n')
+		->fields('n', array('nid', 'expiration_date'))
+		->condition('nid', array_keys($nodes), 'IN')
+		->execute()
+		->fetchAll();	
+	
+	foreach ($result as $record){
+		//En caso de que el nodo se encuentre en la tabla querra decir que tenía el campo "Activar fecha de expiración"	activado.
+		$nodes[$record->nid]->active = 1;
+		
+		//Se formatea la fecha que viene de la base de datos en formato timestamp.
+		$fecha_formateada = array(
+			'year' => date('Y', $record->expiration_date),
+			'month' => date ('n', $record->expiration_date),
+			'day' => date('j', $record->expiration_date),
+		);
+		
+		$nodes[$record->nid]->expiration_date = $fecha_formateada;
+	}
+}
+
+/**
+*	Implements hook_node_validate()
+*/
+function node_expiration_date_validate($node, $form, &$form_state) {
+
+	if (isset($node->active) && $node->active) {
+		// Se comprueba que la fecha introducida es correcta.
+		
+		$fecha = $form['node_expiration_date']['expiration_date']['#value'];
+		
+		if (!checkdate($fecha['month'], $fecha['day'], $fecha['year'])) {
+			form_set_error('expiration_date', t('Date is not valid. Check day, month or year'));
+		}
+	}
+}
+

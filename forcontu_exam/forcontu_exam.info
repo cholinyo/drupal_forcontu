@@ -1,0 +1,8 @@
+name = "Forcontu Exam" 
+description = "Frocontu exam" 
+core = 7.x 
+files[] = forcontu_exam.module
+files[] = forcontu_exam.install
+files[] = forcontu_exam.admin.inc
+configure = Forcontu_exam
+package = My modules

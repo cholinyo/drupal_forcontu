@@ -1,0 +1,51 @@
+<?php
+/**
+ * @file
+ * Install Users login forcontu
+ */
+/**
+* Implements hook_install().
+*/
+function users_login_forcontu_install() {
+}
+/**
+* Implements hook_schema().
+*/
+function users_login_forcontu_schema() {
+$schema['users_login_forcontu'] = array(
+'description' => t('Registros de acceso'),
+'fields' => array(
+'id' => array(
+'description' => 'ID único y autoincremental',
+'type' => 'serial',
+'not null' => TRUE,
+),
+'uid' => array(
+'description' => 'ID usuario',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+'login_date' => array(
+'description' => 'login date',
+'type' => 'int',
+'length' => 255,
+'not null' => TRUE,
+),
+'login_type' => array(
+'description' => 'login_type',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+'ip' => array(
+'description' => 'IP',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+),
+'primary key' => array('id'),
+);
+return $schema;
+}

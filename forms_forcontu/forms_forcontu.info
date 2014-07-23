@@ -1,0 +1,7 @@
+name = Forms Forcontu
+description = An example of advanced uses of the menu APIs Foms.
+package = My modules
+core = 7.x
+files[] = forms_forcontu.module
+files[] = forms_forcontu.install
+

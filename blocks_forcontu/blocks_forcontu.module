@@ -1,0 +1,169 @@
+<?php
+/**
+* @file
+* Blocks Forcontu
+/**
+
+/**
+* Implements hook_block_info().
+*/
+function blocks_forcontu_block_info() {
+
+//obtiene el nombre del tema activo
+$default_theme = variable_get('theme_default', 'bartik');
+//obtiene el listado de regiones del tema
+$regions = system_region_list($default_theme, REGIONS_VISIBLE);
+//si no tiene la región 'sidebar_second'
+//activaremos el bloque en la región por defecto
+if($regions['sidebar_second'])
+$region = 'sidebar_second';
+else
+$region = system_default_region($default_theme);
+
+
+// Bloque Nodos no publicados
+  $blocks['unpublished_nodes'] = array(
+  'info' => t('Unpublished nodes'),
+  'cache' => DRUPAL_NO_CACHE,
+);
+// Bloque Usuarios registrados
+  $blocks['users_list'] = array(
+  'info' => t('Users list'),
+  'cache' => DRUPAL_NO_CACHE,
+);
+// Bloque Ultimos nodos publicados
+  $blocks['published_nodes'] = array(
+  'info' => t('Published nodes'),
+  'cache' => DRUPAL_NO_CACHE,
+  'status' =>1,
+  'region' =>$region,
+);
+
+return $blocks;
+}
+
+/**
+* Implements hook_block_configure().
+*/
+function blocks_forcontu_block_configure($delta = '') {
+  $form = array();
+  switch ($delta){
+   case 'unpublished_nodes':
+     $form['num_nodes'] = array(
+    '#type' => 'select',
+    '#title'   =>   t ( 'Select the number of nodes to display in this block.' ),
+    '#default_value' =>  variable_get('blocks_forcontu_num_nodes', 3),
+    '#options' => array(1=>1, 2=>2, 3=>3, 4=>4, 5=>5),
+     );
+    break;
+	case 'users_list':
+    $form['num_users'] = array(
+    '#type' => 'select',
+    '#title'   =>   t ( 'Select the number of users to display in this block.' ),
+    '#default_value' =>  variable_get('blocks_forcontu_num_users', 3),
+    '#options' => array(1=>1, 2=>2, 3=>3, 4=>4, 5=>5),
+    );
+    $form['active_users'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display only active users.'),
+    '#default_value'   =>  variable_get ( 'blocks_forcontu_active_users',   0 ),
+    );
+    break;
+	case 'published_nodes':
+    $form['num_nodes_pub'] = array(
+    '#type' => 'select',
+    '#title'   =>   t ( 'Select the number of nodes to display in this block.' ),
+    '#default_value' =>  variable_get('blocks_forcontu_num_nodes_pub', 3),
+    '#options' => array(1=>1, 2=>2, 3=>3, 4=>4, 5=>5),
+    );
+	$tipos_cont= array ('article' =>t('Artículo'),'panel' => t('Panel'));
+    $form['nodes_type'] = array(
+    '#type' => 'radios',
+	'#options' => $tipos_cont,
+    '#title' => t('Display only content type.'),
+    '#default_value'   =>  variable_get ( 'blocks_forcontu_nodes_type',0 ),
+    );
+    break;
+}
+return $form;
+}
+/**
+* Implements hook_block_save().
+*/
+function blocks_forcontu_block_save($delta = '', $edit = array()) {
+  switch ($delta){
+  case 'unpublished_nodes':
+    variable_set('blocks_forcontu_num_nodes', $edit['num_nodes']);
+  break;
+  case 'users_list':
+    variable_set('blocks_forcontu_num_users', $edit['num_users']);
+    variable_set ('blocks_forcontu_active_users' , $edit ['active_users' ]);
+  break;
+  case 'published_nodes':
+    variable_set('blocks_forcontu_num_nodes_pub', $edit['num_nodes_pub']);
+    variable_set ('blocks_forcontu_nodes_type' , $edit ['nodes_type' ]);
+  break;
+}
+}
+
+
+function blocks_forcontu_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'unpublished_nodes':
+		$variables['blocks_forcontu'] = theme ('blocks-forcontu-list', $variables);
+    $result = db_select('node', 'n')
+    ->fields('n', array('nid', 'title', 'created'))
+    ->condition('status', 0)
+    ->orderBy('created', 'DESC')
+    ->range(0, variable_get('blocks_forcontu_num_nodes', 3))
+    ->execute();
+    if ($node_title_list = node_title_list($result)) {
+      
+      $block['subject'] = t('Unpublished nodes');
+      $block['content'] = $node_title_list;
+    }
+    break;
+	case 'users_list':
+    $query = db_select('users', 'u')
+    ->fields('u', array('uid', 'name', 'created'))
+    ->orderBy('created', 'DESC')
+    ->range(0, variable_get('blocks_forcontu_num_users', 3));
+    //comprobamos si sólo se deben mostrar los usuarios activos
+    if(variable_get('blocks_forcontu_active_users', 3)==1){
+      $query->condition('status', 1);
+    }
+    $result = $query->execute();
+    $variables['users'] = $result->fetchAll();
+    $variables['title'] = NULL;
+    $block['subject'] = t('Users list');
+    $block['content'] = theme_user_list($variables);
+    break;
+	
+	case 'published_nodes':
+    $result = db_select('node', 'n')
+    ->fields('n', array('nid', 'title', 'created'))
+    ->condition('status', 1)
+	->condition('type',variable_get('blocks_forcontu_nodes_type', `article`))
+    ->orderBy('created', 'DESC')
+    ->range(0, variable_get('blocks_forcontu_num_nodes_pub', 3))
+    ->execute();
+    if ($node_title_list = node_title_list($result)) {
+      $block['subject'] = t('Published nodes');
+      $block['content'] = $node_title_list;
+    }
+}
+return $block;
+}
+
+/**
+* Implements hook_theme().
+*/
+//function blocks_forcontu_theme() {
+//return array(
+//'blocks-forcontu-list' => array(
+//'template' => 'blocks_forcontu-list',
+//'variables' => array('nid' => NULL, 'title' => NULL),
+//),
+//);
+//}

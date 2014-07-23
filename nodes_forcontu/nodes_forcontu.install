@@ -1,0 +1,58 @@
+<?php
+/**
+ * @file
+ * Install nodes forcontu
+ */
+/**
+* Implements hook_install().
+*/
+function nodes_forcontu_install() {
+}
+
+/**
+* Implements hook_schema().
+*/
+function nodes_forcontu_schema() {
+$schema['nodes_forcontu'] = array(
+'description' => 'Almacena los datos del tipo de contenido mi producto.',
+'fields' => array(
+'nid'  => array(
+'type' => 'int',
+'not null' => TRUE,
+'description' => 'Primary Key: nid.',
+),
+'price' => array(
+'type' => 'int',
+'not null' => TRUE,
+'default' => 0,
+'description' => "Precio",
+),
+'weight' => array(
+'type' => 'int',
+'not null' => TRUE,
+'default' => 0,
+'description' => "Peso",
+),
+'length' => array(
+'type' => 'int',
+'not null' => TRUE,
+'default' => 0,
+'description' => "Longitud",
+),
+'width' => array(
+'type' => 'int',
+'not null' => TRUE,
+'default' => 0,
+'description' => "Ancho",
+),
+'height' => array(
+'type' => 'int',
+'not null' => TRUE,
+'default' => 0,
+'description' => "Alto",
+),
+),
+'primary key' => array('nid'),
+);
+return $schema;
+}

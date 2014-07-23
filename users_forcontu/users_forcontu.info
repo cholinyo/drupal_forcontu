@@ -1,0 +1,7 @@
+name = Users Forcontu
+description = An example of advanced uses of the menu APIs Users
+package = My modules
+core = 7.x
+files[] = users_forcontu.module
+//files[] = users_forcontu.install
+

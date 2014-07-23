@@ -1,0 +1,54 @@
+<?php
+/**
+* @file
+* Filter Forcontu
+*/
+/**
+* Implements hook_filter_info().
+*/
+function filter_forcontu_filter_info() {
+$filters['filter_foo'] = array(
+'title' => t('Foo filter'),
+'description' => t('Todas las apariciones de "foo" se sustituirán por la cadena indicada en la configuración.'),
+'process callback'  => '_filter_forcontu_filter_foo_process',
+'default settings' => array(
+'filter_forcontu_foo' => 'bar',
+),
+'settings callback' => '_filter_forcontu_filter_foo_settings',
+'tips callback' => '_filter_forcontu_filter_foo_tips',
+);
+return $filters;
+}
+
+function _filter_forcontu_filter_foo_settings($form, $form_state,
+$filter, $format, $defaults) {
+$settings['filter_forcontu_foo'] = array(
+'#type' => 'textfield',
+'#title' => t('Cadena de sustitución'),
+'#default_value' =>  isset($filter->settings['filter_forcontu_foo']) ?
+$filter -> settings [ 'filter_forcontu_foo' ]   :  $defaults [ 'filter_forcontu_foo' ],
+'#description' => t('Cadena que sustituirá a todas las apariciones de "foo".')
+);
+return $settings;
+}
+
+function _filter_forcontu_filter_foo_process($text, $filter, $format) {
+$replacement = isset($filter->settings['filter_forcontu_foo']) ?
+$filter->settings['filter_forcontu_foo'] : 'bar';
+return str_replace('foo', $replacement, $text);
+}
+
+function  _filter_forcontu_filter_foo_tips ($filter , $format , $long  = FALSE ) {
+$replacement = isset($filter->settings['filter_forcontu_foo']) ?
+$filter->settings['filter_forcontu_foo'] : 'bar';
+if (!$long) {
+// This string will be shown in the content add/edit form
+return t('<em>foo</em> será reemplazado por %replacement.',
+array('%replacement' => $replacement));
+}
+else {
+return t('Todas las apariciones de "foo" se sustituirán por la 
+cadena indicada en la configuración del filtro. El valor actual es
+"%replacement".', array('%replacement' => $replacement));
+}
+}

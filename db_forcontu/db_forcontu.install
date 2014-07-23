@@ -1,0 +1,114 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the DB Forcontu module.
+ */
+/**
+* Implements hook_install().
+*/
+function db_forcontu_install() {
+// Se actualiza el esquema
+$schema['node'] = array();
+db_forcontu_schema_alter($schema);
+// Se añade el nuevo campo a la tabla node.
+db_add_field('node', 'new_field', array('type' => 'int',
+'unsigned' => TRUE, 'not null' => TRUE,
+'default' => 1));
+$objeto=array("content" =>"Contenido", "status" => 1, "author" =>"Vicente");
+drupal_write_record('db_forcontu1',$objeto);
+variable_set('db_forcontu', 1);
+drupal_write_record('variable',$db_forcontu);
+}
+/**
+* Implements hook_uninstall().
+*/
+function db_forcontu_uninstall() {
+// no se realizan acciones
+}
+/**
+* Implements hook_schema().
+*/
+function db_forcontu_schema() {
+
+  $schema['db_forcontu1'] = array(
+    'description' => 'Stores example for DB Forcontu.',
+    'fields' => array(
+      'sid'  => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique ID.',
+      ),
+      'content' => array(
+        'type' => 'varchar',
+		'length' => 200,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => "content",
+      ),
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => 'Status',
+      ),
+      'author' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'author',
+      )
+    ),
+    'primary key' => array('sid'),
+    'indexes' => array(
+      'content'    => array('content'),
+      'status' => array('status'),
+      'author'     => array('author'),
+    ),
+  );
+  
+    $schema['db_forcontu2'] = array(
+    'description' => 'Stores example for DB Forcontu.',
+    'fields' => array(
+      'nid'  => array(
+        'type' => 'int',
+        'not null' => TRUE,
+		'default' => 0, 
+        'description' => 'nid',
+      ),
+      'cid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => "cid",
+      ),
+      'expiration_date' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'expiration_date',
+      )
+    ),
+    'primary key' => array('nid','cid'),
+    'indexes' => array(
+      'expiration_date'    => array('expiration_date'),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+* Implements hook_schema_alter().
+*/
+function db_forcontu_schema_alter(&$schema) {
+// Definición de nuevo campo en la tabla node.
+$schema['node']['fields']['new_field'] = array(
+'type' => 'int',
+'default' => 1,
+'unsigned' => TRUE,
+'not null' => TRUE,
+'default' => 0,
+'description' => t('New field in table: {node}'),
+);
+}

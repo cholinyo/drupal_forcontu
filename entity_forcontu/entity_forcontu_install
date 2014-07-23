@@ -1,0 +1,40 @@
+<?php
+
+/**
+* Implements hook_schema()
+*/
+function entity_forcontu_schema() {
+$schema = array();
+$schema['entity_forcontu_item'] = array(
+'description' => 'Tabla base para la entidad Item.',
+'fields' => array(
+'item_id' => array(
+'description' => 'ID de la entidad.',
+'type' => 'serial',
+'unsigned' => TRUE,
+'not null' => TRUE,
+),
+'bundle_type' => array(
+'description' => 'Tipo de bundle',
+'type' => 'text',
+'size' => 'medium',
+'not null' => TRUE
+),
+'item_description' => array(
+'description' => 'Descripción del elemento.',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+'default' => '',
+),
+'created' => array(
+'description' => 'Fecha de creación de la entidad.',
+'type' => 'int',
+'not null' => TRUE,
+'default' => 0,
+),
+),
+'primary key' => array('item_id'),
+);
+return $schema;
+}

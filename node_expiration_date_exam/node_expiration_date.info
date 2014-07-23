@@ -1,0 +1,7 @@
+name = "Node Expiration Date" 
+description = "Add an expiration date to content" 
+core = 7.x 
+files[] = node_expiration_date.module 
+files[] = node_expiration_date.admin.inc
+configure = admin/config/workflow/node_expiration_date
+package = My modules

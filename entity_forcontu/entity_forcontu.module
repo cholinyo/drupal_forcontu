@@ -1,0 +1,452 @@
+<?php
+/**
+* @file
+* Entity Forcontu
+*/
+/**
+* Implements hook_entity_info()
+*/
+function entity_forcontu_entity_info() {
+$info['entity_forcontu_item'] = array(
+// Etiqueta o título de la entidad.
+'label' => t('Item Entity'),
+// Controlador de la entidad.
+'controller class' => 'EntityForcontuItemController',
+// Tabla base definida en hook_schema().
+'base table' => 'entity_forcontu_item',
+// Función que devuelve los elementos uri de la entidad.
+'uri callback' => 'entity_forcontu_item_uri',
+// La entidad podrá llevar campos asociados. 
+'fieldable' => TRUE,
+// Indicamos los elementos de la tabla que se corresponden con el id
+// y el tipo de conjuntos o bundles de la entidad. 
+'entity keys' => array(
+'id' => 'item_id' , // ID único de la entidad
+'bundle' => 'bundle_type'  // Bundle predefinido
+),
+'bundle keys' => array(
+'bundle' => 'bundle_type',
+),
+// Activamos la caché.
+'static cache' => TRUE,
+// Definimos los Bundles (tipos de Item)
+'bundles' => array(
+'general_bundle' => array(
+'label' => 'General bundle',
+'admin' => array(  //URL desde donde se administrarán los items
+'path' => 'admin/structure/entity_forcontu_item',
+'access arguments' => array('administer 
+entity_forcontu_item entities'),
+),
+),
+),
+// Modos de presentación
+'view modes' => array(
+'full' => array(
+'label' => t('Full'),
+'custom settings' =>  FALSE,
+),
+)
+);
+return $info;
+}
+
+/**
+* Implements hook_menu()
+*/
+function entity_forcontu_menu() {
+// Página de administración de la entidad.
+$items['admin/structure/entity_forcontu_item'] = array(
+'title' => 'Administer Items',
+'page callback' => 'entity_forcontu_item_admin_page',
+'access arguments'   =>   array ( 'administer entity_forcontu_item entities' ),
+);
+//Pestaña por defecto de administración.
+$items['admin/structure/entity_forcontu_item/list'] = array(
+'title' => 'List',
+'type' => MENU_DEFAULT_LOCAL_TASK,
+'weight' => -10,
+);
+// Página que muestra la entidad.
+$items['item/%entity_forcontu_item'] = array(
+'title callback' => 'entity_forcontu_item_title',
+'title arguments' => array(1),
+'page callback' => 'entity_forcontu_item_view',
+'page arguments' => array(1),
+'access arguments' => array('view any entity_forcontu_item entity' ),
+);
+// Pestaña 'View' (muestra una entidad individual).
+$items['item/%entity_forcontu_item/view'] = array(
+'title' => 'View',
+'type' => MENU_DEFAULT_LOCAL_TASK,
+'weight' => -10,
+);
+// Pestaña 'Edit' (edita una entidad individual).
+$items['item/%entity_forcontu_item/edit'] = array(
+'title' => 'Edit',
+'page callback' => 'drupal_get_form',
+'page arguments' => array('entity_forcontu_item_form', 1),
+'access arguments' => array('edit any entity_forcontu_item entity'),
+'type' => MENU_LOCAL_TASK,
+);
+// Añadir un nuevo Item.
+$items['item/add'] = array(
+'title' => 'Add a new Item entity',
+'page callback' => 'entity_forcontu_item_add',
+'access arguments' => array('create entity_forcontu_item entities'),
+);
+return $items;
+}
+
+/**
+* Carga un objeto de entidad Item.
+*
+* @param $item_id
+* @param $reset
+*  Valor lógico que indica si se reseteará la caché. 
+* @return
+* Objeto $item o FALSE si no ha podido ser cargado.
+*/
+function entity_forcontu_item_load($item_id = NULL, $reset = FALSE) {
+$item_ids = (isset($item_id) ? array($item_id) : array());
+$item = entity_forcontu_item_load_multiple($item_ids, $reset);
+return $item ? reset($item) : FALSE;
+}
+/**
+* Carga múltiples entidades Item.
+*
+* Hace una llamada al método load() del controlador de la entidad. 
+*/
+function entity_forcontu_item_load_multiple($item_ids = FALSE,
+$conditions = array(), $reset = FALSE) {
+return entity_load('entity_forcontu_item', $item_ids, 
+$conditions, $reset);
+}
+
+
+/**
+* Definición de EntityForcontuItemControllerInterface.
+*
+* Creamos la interfaz para informar a otros módulos de los 
+* métodos adicionales añadir al Controlador.
+*/
+interface EntityForcontuItemControllerInterface
+extends DrupalEntityControllerInterface {
+public function create();
+public function save($entity);
+public function delete($entity);
+}
+/**
+* EntityForcontuItemController extends DrupalDefaultEntityController.
+*
+* En la subclase de DrupalDefaultEntityController añadimos
+* los métodos create(), save() y delete(). 
+*/
+class EntityForcontuItemController
+extends DrupalDefaultEntityController
+implements EntityForcontuItemControllerInterface {
+/**
+* Crea y devuelve una entidad de tipo entity_forcontu_item.
+*/
+public function create() {
+$entity = new stdClass();
+$entity->type = 'entity_forcontu_item';
+$entity->item_id = 0;
+$entity->bundle_type = 'general_bundle';
+$entity->item_description = '';
+return $entity;
+}
+/**
+* Guarda los campos personalizados de la entidad 
+* utilizando drupal_write_record()
+*/
+public function save($entity) {
+// Si la entidad no tiene aún un item_id, obtenemos la 
+// fecha de creación. 
+if (empty($entity->item_id)) {
+$entity->created = time();
+}
+// Invoca a hook_entity_presave().
+module_invoke_all('entity_presave', 'entity_forcontu_item', $entity);
+// Utilizamos drupal_write_record() para almacenar la entidad.
+// El argumento 'primary_keys' determina si se trata de una 
+// inserción o una actualización (se facilita el $item_id).
+$primary_keys = $entity->item_id ? 'item_id' : array();
+drupal_write_record('entity_forcontu_item', $entity, $primary_keys);
+// En este punto se invoca a hook_entity_update() o
+// hook_entity_insert(), dependiendo de si se trata de una
+// actualización o creación de una entidad. 
+// También actualizaremos o insertaremos los campos asociados
+// a la entidad. 
+if (empty($primary_keys)) { //inserción
+field_attach_insert('entity_forcontu_item', $entity);
+module_invoke_all('entity_insert', 'entity_forcontu_item', $entity);
+} else { //actualización
+field_attach_update('entity_forcontu_item', $entity);
+module_invoke_all('entity_update', 'entity_forcontu_item', $entity);
+}
+return $entity;
+}
+/**
+* Elimina una entidad.
+*
+* Utiliza delete_multiple().
+*/
+public function delete($entity) {
+$this->delete_multiple(array($entity));
+}
+/**
+* Elimina una o más entidades.
+*
+* @param $item_ids
+* Array con los IDs de las entidades a eliminar. 
+*/
+public function delete_multiple($entities) {
+$item_ids = array();
+if (!empty($entities)) {
+$transaction = db_transaction();
+try {
+foreach ($entities as $entity) {
+module_invoke_all('entity_forcontu_item_delete', $entity);
+// Invoca a hook_entity_delete().
+module_invoke_all('entity_delete' , $entity, 'entity_forcontu_item' );
+field_attach_delete('entity_forcontu_item', $entity);
+$item_ids[] = $entity->item_id;
+}
+db_delete('entity_forcontu_item')
+->condition('item_id', $item_ids, 'IN')
+->execute();
+}
+catch (Exception $e) {
+$transaction->rollback();
+watchdog_exception('entity_forcontu', $e);
+throw $e;
+}
+}
+}
+}
+/**
+* Página de administración.
+*/
+function entity_forcontu_item_admin_page() {
+$content = array();
+// Enlace para añadir un nuevo Item
+$content[] = array(
+'#type' => 'item',
+'#markup' => l(t('Add a new Item'), 'item/add'),
+);
+// Tabla con todos los Items creados
+$content['table'] = entity_forcontu_item_list_entities();
+return $content;
+}
+/**
+* Array renderizable (estilo tabla) con las entidades creadas.
+*/
+function entity_forcontu_item_list_entities() {
+$content = array();
+$entities = entity_forcontu_item_load_multiple();
+if (!empty($entities)) {
+foreach ( $entities as $entity ) {
+$rows[] = array('data' => array(
+'id' => $entity->item_id,
+'item_description' => l($entity->item_description,
+'item/' . $entity->item_id),
+'bundle' => $entity->bundle_type,
+),
+);
+}
+$content['entity_table'] = array(
+'#theme' => 'table',
+'#rows' => $rows,
+'#header' => array(t('ID'), t('Item Description'), t('Bundle')),
+);
+}
+else {
+$content[] = array(
+'#type' => 'item',
+'#markup' => t('There aren\'t any Items.'),
+);
+}
+return $content;
+}
+/**
+* Función para añadir una entidad.
+* Llama al método create() del controlador y presenta el formulario.
+*/
+function entity_forcontu_item_add() {
+// Llamando al método create() se crea un objeto Item que será
+// pasado al formulario y a las funciones de validación y envío.
+$entity = entity_get_controller('entity_forcontu_item')->create();
+return drupal_get_form('entity_forcontu_item_form', $entity);
+}
+/**
+* Formulario para crear (y editar) una entidad entity_forcontu_item.
+*/
+function entity_forcontu_item_form($form, &$form_state, $entity) {
+// Definimos los campos de la tabla
+$form['item_description'] = array(
+'#type' => 'textfield',
+'#title' => t('Item Description'),
+'#required' => TRUE,
+'#default_value' => $entity->item_description,
+);
+$form['item_entity'] = array(
+'#type' => 'value',
+'#value' => $entity,
+);
+// Añadimos los campos adicionales del tipo de entidad 
+field_attach_form('entity_forcontu_item', $entity, $form, $form_state);
+$form['submit'] = array(
+'#type' => 'submit',
+'#value' => t('Save'),
+'#weight' => 100,
+);
+$form['delete'] = array(
+'#type' => 'submit',
+'#value' => t('Delete'),
+'#submit' => array('entity_forcontu_item_edit_delete'),
+'#weight' => 200,
+);
+return $form;
+}
+/**
+* Validación del formulario. 
+* Además de las validaciones específicas debemos añadir
+* la validación de los campos añadidos a la entidad.
+*/
+function entity_forcontu_item_form_validate($form, &$form_state) {
+field_attach_form_validate('entity_forcontu_item',
+$form_state['values']['item_entity'], $form, $form_state);
+}
+/**
+* Envío del formulario (guarda la entidad). 
+*/
+function entity_forcontu_item_form_submit($form, &$form_state) {
+$entity = $form_state['values']['item_entity'];
+$entity->item_description =
+$form_state['values']['item_description'];
+field_attach_submit('entity_forcontu_item', $entity, $form,
+$form_state);
+$entity = entity_forcontu_item_save($entity);
+$form_state['redirect'] = 'item/' . $entity->item_id;
+}
+/**
+* Elimina la entidad
+*/
+function entity_forcontu_item_edit_delete( $form , &$form_state )
+{
+$entity = $form_state['values']['item_entity'];
+entity_forcontu_item_delete($entity);
+drupal_set_message(t('The entity %item_description (ID %id) hasbeen deleted',
+array('%item_description' => $entity->item_description, '%id'
+=> $entity->item_id))
+);
+$form_state['redirect'] =
+'admin/structure/entity_forcontu_item/';
+}
+/**
+* Llamada al método save() del controlador. 
+*/
+function entity_forcontu_item_save(&$entity) {
+return entity_get_controller('entity_forcontu_item')->save($entity);
+}
+/**
+* Llamada al método delete() del controlador. 
+*/
+function entity_forcontu_item_delete($entity) {
+entity_get_controller('entity_forcontu_item')->delete($entity);
+}
+/**
+* Implements the uri callback.
+*/
+function entity_forcontu_item_uri($item) {
+return array(
+'path' => 'item/' . $item->item_id,
+);
+}
+/**
+* Función de retorno que devuelve el título de la entidad.
+*/
+function entity_forcontu_item_title($entity) {
+return t('Item: @item_description',
+array('@item_description' => $entity->item_description));
+}
+/**
+* Muestra la página de la entidad.
+*/
+function entity_forcontu_item_view($entity, $view_mode = 'full') {
+$entity->content = array(
+'#view_mode' => $view_mode,
+);
+// La presentación se realiza a través de field API
+field_attach_prepare_view('entity_forcontu_item',
+array($entity->item_id => $entity), $view_mode);
+entity_prepare_view('entity_forcontu_item',
+array($entity->item_id => $entity));
+$entity->content = field_attach_view('entity_forcontu_item',
+$entity, $view_mode);
+// Presentación de los campos de la entidad
+$entity->content['created'] = array(
+'#type' => 'item',
+'#title' => t('Created date'),
+'#markup' => format_date($entity->created),
+);
+$entity->content['item_description'] = array(
+'#type' => 'item',
+'#title' => t('Item Description'),
+'#markup' => $entity->item_description,
+);
+$type = 'entity_forcontu_item';
+drupal_alter(array('entity_forcontu_item_view', 'entity_view'),
+$entity->content, $type);
+return $entity->content;
+}
+/**
+* Implements hook_field_extra_fields()
+*/
+function entity_forcontu_field_extra_fields() {
+$form_elements['created'] = array(
+'label' => t('Creation date'),
+'description' => t('Creation date'),
+'weight' => -10,
+);
+$form_elements['item_description'] = array(
+'label' => t('Item Description'),
+'description' => t('Item Description'),
+'weight' => -5,
+);
+$display_elements['created'] = array(
+'label' => t('Creation date'),
+'description' => t('Creation date (an extra display field)'),
+'weight' => -10,
+);
+$display_elements['item_description'] = array(
+'label' => t('Item Description'),
+'description' => t('Just like title, but trying to point out that 
+it is a separate property'),
+'weight' => -5,
+);
+$extra_fields [ 'entity_forcontu_item' ][ 'general_bundle' ][ 'form' ]   =   $form_elements ;
+$extra_fields [ 'e ntity_forcontu_item' ][ 'general_bundle' ][ 'display' ]   =   $display_elements ;
+return $extra_fields;
+}
+/**
+* Implements hook_permission()
+*/
+function entity_forcontu_permission() {
+$permissions = array(
+'administer entity_forcontu_item entities' =>  array(
+'title' => t('Administer Item entities'),
+),
+'view any entity_forcontu_item entity' => array(
+'title' => t('View any Item entity'),
+),
+'edit any entity_forcontu_item entity' => array(
+'title' => t('Edit any Item entity'),
+),
+'create entity_forcontu_item entities' => array(
+'title' => t('Create Item Entities'),
+),
+);
+return $permissions;
+}

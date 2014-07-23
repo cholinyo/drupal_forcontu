@@ -1,0 +1,5 @@
+name = "DB Forcontu"
+description = "Trabajando sobre BD eb drupal, instalación y desinstalación"
+core = 7.x
+files[] = db_forcontu.install
+package = My modules

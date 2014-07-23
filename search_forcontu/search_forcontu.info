@@ -1,0 +1,5 @@
+name = "Search Forcontu"
+description = "TSearch Forcontu"
+core = 7.x
+files[] = search_forcontu.module
+package = My modules

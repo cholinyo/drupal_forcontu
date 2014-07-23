@@ -1,0 +1,32 @@
+<?php
+/**
+* @file
+* Módulo Node Expiration Date 
+* Este módulo permite añadir una fecha de caducidad a los nodos.
+*/
+/**
+* Implements hook_help().
+*/
+function node_expiration_date_help($path, $arg) {
+switch ($path) {
+// Ayuda general para el módulo Node Expiration Date 
+case 'admin/help#node_expiration_date':
+return '<p>' . t('This module permits to add an expiration  date to any content in the site. The administrator can configure which content types could have an expiration date.') . '</p>';
+} 
+}
+/**
+* Implements hook_menu().
+*/
+function node_expiration_date_menu() {
+$items['admin/config/workflow/node_expiration_date'] = array(
+'title' => 'Node Expiration Date settings',
+'description' => 'Settings for module Node Expiration Date',
+'page callback' => 'drupal_get_form',
+'page arguments' => array('node_expiration_date_admin_settings'),
+'access callback' => 'user_access',
+'access arguments' => array('administer site configuration'),
+'type' => MENU_NORMAL_ITEM,
+'file' => 'node_expiration_date.admin.inc',
+);
+return $items;
+}

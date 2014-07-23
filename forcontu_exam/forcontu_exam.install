@@ -1,0 +1,56 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the DB Forcontu module.
+ */
+/**
+* Implements hook_install().
+*/
+function forcontu_exam_install() {
+	
+	$default_theme = variabla_get('theme_default' , 'bartik');
+	_block_rehash($default_theme);
+}
+/**
+* Implements hook_uninstall().
+*/
+function forcontu_exam_uninstall() {
+// no se realizan acciones
+}
+/**
+* Implements hook_schema()
+*/
+
+function forcontu_exam_schema() {
+	$schema['forcontu_exam'] = array(
+			'description' => t('Table to store Forcontu Exam'),
+			'fields' => array(
+				'nid' => array(
+					'type' => 'int',
+					'unsigned' => TRUE,
+					'not null' => TRUE,
+					'description' => t('The node id {node}.id'),
+				),
+				    'note' =>  array(
+       				'type' => 'varchar',
+       				'description' => t('the note to send to the coordinator'),
+					'length' => 255,
+    			    'not null' => TRUE,
+ 			        'default' => '',
+ 			        'description' => "note",
+   
+				),
+					'coordinator' => array(
+					'type' => 'int',
+					'not null' => TRUE,
+					'unsigned' => TRUE,
+					'description' => t('the user coordinator to wich thde note will be sent'),
+				),
+		),
+		'primary key' => array('nid'),
+	);
+	// Se devuelve el esquema definido.
+	return $schema;
+}
+
+

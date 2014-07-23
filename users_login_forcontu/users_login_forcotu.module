@@ -1,0 +1,22 @@
+<?php
+/**
+* @file
+* Users Login Forcontu
+/**
+/**
+* Implements hook_user_login().
+*/
+function users_login_forcontu_user_login(&$edit, $account){
+global $user; 
+$usuario=$user->uid;
+$date=time();
+
+$result = db_insert('users_login_forcontu')
+->fields(array(
+'uid' => $usuario,
+'login_date' => 00,//$date,
+'login_type' => "login",
+'ip' => "0.0.0.0",
+))
+->execute();
+}

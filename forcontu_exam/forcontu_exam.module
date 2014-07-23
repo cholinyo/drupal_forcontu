@@ -1,0 +1,330 @@
+<?php
+/**
+* @file
+* Módulo Forcontu Exam
+* Este módulo añade notas a los archivos a publicar.
+*/
+
+/**
+* Implements hook_help().
+*/
+function forcontu_exam_help($path, $arg) {
+	switch ($path) {
+	// Ayuda general para el módulo Node Expiration Date
+	case 'admin/help#forcontu_exam':
+		return '<p>' . t('Este módulo permite añadir campos a tipo de contenido Página Blanca') . '</p>';
+	}
+}
+
+
+/**
+* Implements hook_menu().
+*/
+function forcontu_exam_menu() {
+$items['forcontu_exam'] = array(
+'title' => 'Forcontu Exam settings',
+'description' => 'Settings for module Forcontu Exam',
+'page callback' => 'drupal_get_form',
+'page arguments' => array('forcontu_exam_admin_settings'),
+'access callback' => 'user_access',
+'access arguments' => array('administer site configuration'),
+'type' => MENU_NORMAL_ITEM,
+'file' => 'forcontu_exam.admin.inc',
+);
+return $items;
+}
+
+
+/**
+* Implements hook_form_alter().
+**/
+function forcontu_exam_form_alter(&$form, &$form_state, $form_id) {
+	
+    $list_coordinadores= array();
+	$user_fields=array();
+	$tipos=array();
+	$n=0;
+	$k=0;
+	//Obtengo del formulario de configuarcio los tipos de contenidos y le añado _node_form para que tenga la estructura de $form_id 
+	$tipo = variable_get('forcontu_exam_node_types');
+		//obtenemos los usuarios con el rol coordinador
+	foreach ($tipo as $key => $value) {
+		$tipos[$k]=$value.'_node_form';
+		$k++;	
+	}	
+
+	
+	$result = db_select ('users_roles' , 'n')
+		->fields('n')
+		->condition ('rid',5,'=')
+		->execute();
+  while ($record = $result -> fetchAssoc()){
+	  $user_fields[$n]=user_load($record['uid']);
+	  $cod= $user_fields[$n]->uid;
+	  $list_coordinadores[$cod]=$user_fields[$n]->name;
+	  $n=$n+1;
+	  
+}
+
+	
+	//Modificación del formulario de creación de "página".
+	if(in_array($form_id,$tipos)){
+	
+		 $form['forcontu_exam'] = array(
+         '#type' => 'fieldset',
+         '#title' => t('forcontu exam'),
+         '#collapsible' => TRUE,
+         '#collapsed' => FALSE,
+      );
+			
+			$form['forcontu_exam']['active'] = array(
+         '#type' => 'checkbox',
+         '#title' => t('Check if you want to inform the coordinator of section'),
+		 //Para poder asignar $form['#node']->activate al valor por defecto del campo el hook_node_load debe estar correctamente implementado.
+		 '#default_value' => isset($form['#node']->active) ? 1 : 0,
+      );
+						
+		$form['forcontu_exam']['note'] = array(
+         '#type' => 'textfield',
+         '#title' => t('Write the note to send to the coordinator'),
+         '#size' => 50,
+         '#maxlength' => 50,
+         '#default_value' => (($form['#node']->note) ? ($form['#node']->note) : ''),
+      );
+	  $form['forcontu_exam']['coordinator'] = array(
+         '#type' => 'select',
+         '#title' => t('Select the user coordinator to wich thde note will be sent'),
+         '#options' => $list_coordinadores,
+         '#description' => t('Select the user coordinator to wich thde note will be sent '),
+         '#default_value' => (($form['#node']->coordinator) ? ($form['#node']->coordinator) : ''),
+      );		
+	}
+}
+
+/**
+* Implements hook_node_insert().
+*/
+function forcontu_exam_node_insert($node) {
+	
+    if (isset($node->active)) {
+
+//		Sólo se inserta si el nodo tiene activada la opción de activación de fecha de expiración.
+		if ($node->active) {
+			db_insert('forcontu_exam')
+				->fields(
+						array(
+							'nid' => $node->nid,
+							'note' => $node->note,
+         					'coordinator' => $node->coordinator,
+						)
+					)
+				->execute();
+		}
+	}
+	
+	
+}
+/**
+* Implements hook_node_update().
+*/
+function forcontu_exam_node_update($node) {
+	if (isset($node->active)) {
+	
+	//1. Actualización de un nodo que tiene activada la opción de "Activar fecha de expiración".
+		if ($node->active) {
+		
+			//1.1. Si el nodo no existe en la tabla 'node_expiration_date' hay que insertarlo.
+			
+			$result=db_select('forcontu_exam','n')
+				->fields('n', array('nid'))
+				->condition('nid', $node->nid, '=')
+				->execute()
+				->fetchAll();
+			
+			if (count($result)==0){
+				db_insert('forcontu_exam')
+				->fields(
+						array(
+							'nid' => $node->nid,
+							'note' => $node->note,
+							'coordinator' => $node->coordinator,							
+						)
+					)
+				->execute();
+			}
+			else {
+				
+				//1.2. Si el nodo ya existía en la tabla se actualizas los valores.
+				
+				db_update('forcontu_exam')
+				->fields(
+						array(
+							'nid' => $node->nid,
+							'note' => $node->note,
+							'coordinator' => $node->coordinator,							
+						)
+					)
+				->condition('nid', $node->nid, '=')
+				->execute();
+			}
+		}
+		
+		//2. Actualización de un nodo que tiene desactivada la opción de "Activar fecha de expiración".
+	
+		else {
+		//2.1. Si el nodo tenía marcada la opción y ésta se deshabilitó en la edición, hay que eliminar el registro de la tabla .
+			$result=db_select('forcontu_exam','n')
+				->fields('n', array('nid'))
+				->condition('nid', $node->nid, '=')
+				->execute()
+				->fetchAll();
+			if (count($result)>0){
+				db_delete('forcontu_exam')
+					->condition('nid', $node->nid)
+					->execute();
+			}
+		}
+	}
+}
+
+
+
+function forcontu_exam_node_submit($form, &$form_state){
+	global $language, $base_url	;
+	//solo enviaremos correo si está activo
+	if ($form->active == 1) {
+		$datos_coord = user_load($form->coordinator);
+		dpm ($datos_coord);
+		
+		$to = $datos_coord->mail;
+		$site_mail = variable_get('site_mail');
+		$params = $form_state['values'];
+		drupal_mail('forcontu_exam','email_user',$to,$language,$params,$site_mail);
+	}
+  
+} 
+/**
+* Implements hook_load().
+*/
+function forcontu_exam_node_load($nodes) {
+	$result = db_query('SELECT nid, note, coordinator FROM {forcontu_exam} WHERE nid IN (:nids)', array(':nids' => array_keys($nodes)));
+foreach ($result as $record) {
+	// Si esta en la tabla es porque esta activo
+	$nodes[$record->nid]->active = 1;
+	$nodes[$record->nid]->note = $record->note;
+	$nodes[$record->nid]->coordinator = $record->coordinator;
+}
+}
+
+/**
+* Implements hook_block_info().
+*/
+function forcontu_exam_block_info() {
+	
+	//obtenemos el nombre del tema activo y las regiones del tema
+	$default_theme = variable_get ('theme_default' , 'bartik');
+	$regions = system_region_list ($default_theme , REGIONS_VISIBLE);
+	
+	if($regions['sidebar_second'])
+		$region = 'sidebar_second';
+	else
+		$region =  system_default_region($default_theme);	
+	
+// Bloque Nodos con el check de revision activado
+	$blocks['revision_nodes'] = array(
+		'info' => t('Revision nodes'),
+		'cache' => DRUPAL_NO_CACHE,
+		'status' => 1,
+		'region' => $region,
+);
+return $blocks;
+}
+/**
+* Implements hook_block_configure().
+*/
+function forcontu_exam_block_configure($delta = '') {
+	$form = array();
+	switch ($delta){
+	case 'revision_nodes':
+		$form['num_nodes'] = array(
+			'#type' => 'select',
+			'#title'   =>   t ( 'Select the number of nodes to display in this block.' ),
+			'#default_value' =>  variable_get('forcontu_exam_num_nodes', 3),
+			'#options' => array(1=>1, 2=>2, 3=>3, 4=>4, 5=>5),
+		);
+	break;
+}
+	return $form;
+}
+
+/**
+* Implements hook_block_save().
+*/
+function forcontu_exam_block_save($delta = '', $edit = array()) {
+	switch ($delta){
+	case 'revision_nodes':
+		variable_set('forcontu_exam_num_nodes', $edit['num_nodes']);
+	break;
+	}
+}
+/**
+* Implements hook_block_view().
+*/
+function forcontu_exam_block_view($delta = '') {
+	global $user;
+	$block = array();
+	$lista_nodos= array();
+	$usuario = $user->uid;
+	$n=0;
+//	dpm ($user);
+//	$rol = $user->
+	switch ($delta) {
+	case 'revision_nodes':
+		// Seleccionamo todos los registros de la tabla forcontu_exam que pertenecen al usuario
+		$result = db_select('forcontu_exam', 'n')
+			->fields('n', array('nid', 'note'))
+			->condition('coordinator', $usuario , '=')
+			->execute();
+		while ($record = $result->fetchAssoc()){
+//			dpm ($record);
+			$lista_nodos[$n]=$record['nid'];
+			$n++;
+		}
+		
+		if (count ($lista_nodos) > 0) { 
+		//Puedo comprobar que hay registros en la lista y si no no ejecuto nada;
+		
+		//$lista_nodos = de todos los nodos que pertenece al usuario
+		$result = db_select('node', 'n')
+			->fields('n', array('nid', 'title'))
+			->condition('nid', $lista_nodos , 'IN')
+			->orderBy('created', 'DESC')
+			->range(0, variable_get('forcontu_exam_num_nodes', 3))
+			->execute();
+			
+		}
+	if ($node_title_list = node_title_list($result)) {
+		$block['subject'] = t('Revision nodes');
+		$block['content'] = $node_title_list;
+	}
+	break;
+}
+return $block;
+}
+
+/**
+* Implements hook_mail().
+*/
+function forcontu_exam_mail($key, &$message, $params) {
+	$language = $message['language'];
+	$variables = array(
+	'!site-name' => variable_get('site_name', 'Drupal'),
+	'!sender-name' => $params['note' ] . ' '  . $params['coordinator'],
+	'!form-id' => $params['form_id'],
+	'!sender-email' => $params['email'],
+);
+
+	$message['subject'] = t('Solicitud recibida desde [!site-name]', $variables, array('langcode' => $language->language));
+	$message['body'][] = t("Tienes nuevos articulos para revisar:",	$variables, array('langcode' => $language->language));
+}
+

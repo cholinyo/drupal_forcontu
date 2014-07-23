@@ -1,0 +1,5 @@
+name = Filter Forcontu
+description = An example of advanced uses of the menu APIs Filter
+package = My modules
+core = 7.x
+files[] = filter_forcontu.module

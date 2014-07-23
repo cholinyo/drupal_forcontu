@@ -1,0 +1,16 @@
+<?php
+/**
+* @file
+* Módulo DB Forcontu
+* Este módulo prueba de la API DB.
+*/
+/**
+* Implements hook_help().
+*/
+function dbforcontu_help($path, $arg) {
+switch ($path) {
+// Ayuda general para el módulo Node Expiration Date 
+case 'admin/help#db_forcontu':
+return '<p>' . t('This module is for work with DB Forcontu.') . '</p>';
+} 
+}

@@ -1,0 +1,6 @@
+name = Menu Forcontu
+description = An example of advanced uses of the menu APIs.
+package = My modules
+core = 7.x
+files[] = menu_forcontu.module
+

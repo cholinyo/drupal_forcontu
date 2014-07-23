@@ -1,0 +1,27 @@
+<?php
+/**
+* Implements hook_schema()
+*/
+
+function node_expiration_date_schema() {
+	$schema['node_expiration_date'] = array(
+			'description' => t('Table to store node expiration dates'),
+			'fields' => array(
+				'nid' => array(
+					'type' => 'int',
+					'unsigned' => TRUE,
+					'not null' => TRUE,
+					'description' => t('The node id {node}.nid with an expiration date'),
+				),
+				'expiration_date' => array(
+					'description' => t('Expiration date for the node: Unix timestamp'),
+					'type' => 'int',
+					'not null' => TRUE,
+				),
+		),
+		'primary key' => array('nid'),
+	);
+	// Se devuelve el esquema definido.
+	return $schema;
+}
+

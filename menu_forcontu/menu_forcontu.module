@@ -1,0 +1,146 @@
+<?php
+/**
+* @file
+* Menu Forcontu
+*/
+/**
+* Implements hook_menu().
+*/
+function menu_forcontu_menu(){
+  $items['admin/config/development/pagina1'] = array(
+  'title' => 'Nuevo elemento de menu en raiz de Administracion',
+  'page callback' => 'menu_forcontu_pagina1',
+  'description' => 'Descripción del enlace',
+  'access callback' => TRUE,
+  'type' => MENU_NORMAL_ITEM,
+  'weight' => 1,
+);
+$items['calculadora/%/%'] = array(
+  'title' => 'Calculadora',
+  'page callback' => 'menu_forcontu_calculadora',
+  'page arguments' => array(1,2),
+  'access callback' => TRUE,
+  'type' => MENU_CALLBACK,
+);
+//Ejemplo de pestañas
+$items['tabs'] = array(
+  'title' => 'Ejemplos de pestañas',
+  'page callback' => 'menu_forcontu_tab1',
+  'access callback' => TRUE,
+  'type' => MENU_NORMAL_ITEM,
+);
+$items['tabs/tab1'] = array(
+  'title' => 'Pestaña 1',
+  'type' => MENU_DEFAULT_LOCAL_TASK,
+  'weight' => 1,
+);
+$items['tabs/tab2'] = array(
+  'title' => 'Pestaña 2',
+  'page callback' => 'menu_forcontu_intranet',
+  'access callback' => 'user_access',
+  'access arguments' => array('access to menu forcontu'),
+  'type' => MENU_CALLBACK,
+  'weight' => 2,
+);
+$items['tabs/tab3'] = array(
+  'title' => 'Pestaña 3',
+  'page callback' => 'menu_forcontu_tab3',
+  'access callback' => TRUE,
+  'type' => MENU_LOCAL_TASK,
+  'weight' => 3,
+);
+$items['admin/people/user_tab'] = array(
+    'title' => 'Nueva pestaña para usuarios',
+    'description' => 'Determine access to features by selecting permissions for roles.',
+    'page callback' => 'new_tab_for_users',
+    'page arguments' => array('user_admin_permissions'),
+    'access arguments' => array('administer permissions'),
+    'file' => 'user.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+return $items; 
+}
+
+/**
+* Implements hook_permission().
+*/
+function menu_forcontu_permission() {
+return array(
+'access to menu forcontu' => array(
+'title' => t('Access to Menu Forcontu'),
+'description' => t(' Allows access to restricted pages of 
+the menu items defined in Menu Forcontu'),
+),
+);
+}
+
+/**
+* Page callback
+* Función que se invocará al cargar la página www.example.com/pagina1
+* http://avanzado7.vcarunch.aprendedrupal.es/admin/config/development/pagina1
+*/
+function menu_forcontu_pagina1(){
+$output = t('Aqui se implementa el código de configuración del modulo');
+return $output;
+}
+
+/**
+* Page callback calculadora/%/%
+* Función que se invocará al cargar la página www.example.com/calculadora
+*/
+function menu_forcontu_calculadora($arg1='', $arg2=''){
+$output = t('La suma de @arg1 y @arg2 es: @suma </br> La resta de @arg1 y @arg2 es: @resta </br> La multiplicaci&oacute;n de @arg1 y @arg2 es: @mult </br> La divisi&oacuten de @arg1 y @arg2 es: @div </br> El resto de la divisi&oacuten de @arg1 y @arg2 es: @resto </br>',
+  array('@arg1' => $arg1, '@arg2' => $arg2, '@suma' => $arg1+$arg2, '@resta' => $arg1-$arg2, '@mult' => $arg1*$arg2, '@div' => $arg1/$arg2, '@resto' => $arg1%$arg2));
+return $output;
+}
+
+/**
+* Page callback - Tab 1
+*/
+function menu_forcontu_tab1(){
+$output = t('First tab');
+return $output;
+}
+/**
+* Page callback - Tab 2
+*/
+function menu_forcontu_tab2(){
+$output = t('Second tab');
+return $output;
+}
+/**
+* Page callback - Tab 3
+*/
+function menu_forcontu_tab3(){
+$output = t('Third tab');
+return $output;
+}
+/**
+* Page callback - Intranet
+*/
+function menu_forcontu_intranet(){
+$output = t('Página restringida para los usuarios con el permiso 
+adecuado');
+return $output;
+}
+/**
+* Page callback - new_tab_for_users
+*/
+
+function new_tab_for_users(){
+$a="";
+$menus=menu_get_names();
+foreach ($menus as $menu) { 
+  $a.="<li>".$menu."</li>";
+}
+$b="";
+$enlaces=menu_main_menu();
+foreach ($enlaces as $enlace) {
+  foreach ($enlace as $record) {
+    $b.="<li>".$record."</li>";
+}
+}
+$output = "<h2>Menus del sitio</h2>".$a."<h2>Enlaces del menu principal</h2>".$b;
+return $output;
+}

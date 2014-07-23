@@ -1,0 +1,6 @@
+name = Blocks Forcontu
+description = An example of advanced uses of the menu APIs Block
+package = My modules
+core = 7.x
+files[] = blocks_forcontu.module
+files[] = blocks_forcontu.install

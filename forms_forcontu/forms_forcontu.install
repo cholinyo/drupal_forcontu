@@ -1,0 +1,81 @@
+<?php
+/**
+ * @file
+ * Install forms forcontu
+ */
+/**
+* Implements hook_install().
+*/
+function forms_forcontu_install() {
+}
+/**
+* Implements hook_schema().
+*/
+function forms_forcontu_schema() {
+$schema['forms_forcontu'] = array(
+'description' => t('Datos de la cuenta de usuario'),
+'fields' => array(
+'id' => array(
+'description' => 'ID único y autoincremental',
+'type' => 'serial',
+'not null' => TRUE,
+),
+'iduser' => array(
+'description' => 'ID usuario',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+'nombre' => array(
+'description' => 'nombre',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+'apellidos' => array(
+'description' => 'apellidos',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+'email' => array(
+'description' => 'Email',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+'direccion' => array(
+'description' => 'direccion',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+'pais' => array(
+'description' => 'pais',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+'nombre_user' => array(
+'description' => 'Nombre usuario',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+'password' => array(
+'description' => 'Clave',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+),
+'fecha' => array(
+'description' => 'Fecha',
+'type' => 'int',
+'length' => 255,
+'not null' => TRUE,
+),
+),
+'primary key' => array('id'),
+);
+return $schema;
+}

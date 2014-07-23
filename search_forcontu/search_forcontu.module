@@ -1,0 +1,56 @@
+<?php
+/**
+* Implements hook_node_update_index().
+*/
+function search_forcontu_node_update_index($node) {
+  if($node->type == 'article') {
+return 'articulo';
+}
+}
+/**
+* Implements hook_node_search_result().
+*/
+function search_forcontu_node_search_result($node) {
+if($node->type == 'article') {
+return array('article' => t("Articulo"));
+}
+}
+/**
+* Implements hook_search_info().
+*/
+function search_forcontu_search_info() {
+return array(
+'title' => 'Noticias',
+'path' => 'news',
+);
+}
+/**
+* Implements hook_search_execute().
+*/
+function search_forcontu_search_execute ($keys  = NULL , $conditions  = NULL ) {
+if (!$keys) {
+$keys = '';
+}
+$results = array();
+$query = db_select('node', 'n');
+$search = $query
+->condition('n.status', NODE_PUBLISHED)
+->fields('n', array('nid', 'title'))
+->condition('n.type', 'article')
+->orderBy('n.changed', 'DESC')
+->condition('n.title', '%' . db_like($keys) . '%', 'LIKE')
+->extend('PagerDefault')
+->limit(10)
+->execute();
+foreach ($search as $item) {
+$node = node_load($item->nid);
+$uri = entity_uri('node', $node);
+$results[] = array(
+'link' => url($uri['path'], array_merge($uri['options'],
+array('absolute' => TRUE))),
+'title' => $node->title,
+'date' => $node->changed,
+);
+}
+return $results;
+}

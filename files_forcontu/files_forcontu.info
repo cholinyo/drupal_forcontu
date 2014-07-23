@@ -1,0 +1,5 @@
+name = "Files Forcontu"
+description = "Implementación del módulo Files Forcontu"
+core = 7.x
+files[] = files_forcontu.module
+package = My modules

@@ -1,0 +1,19 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the DB Forcontu module.
+ */
+/**
+* Implements hook_install().
+*/
+function blocks_forcontu_install() {
+//obtiene el nombre del tema activo
+$default_theme = variable_get('theme_default', 'bartik');
+_block_rehash($default_theme);
+}
+/**
+* Implements hook_uninstall().
+*/
+function blocks_forcontu_uninstall() {
+// no se realizan acciones
+}

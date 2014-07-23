@@ -1,0 +1,7 @@
+name = "First example"
+description = "My first Drupal module"
+core = 7.x
+files[] = first_example.module
+files[] = first_example.admin.inc
+configure = admin/config/contentfirst_example
+package = My modules

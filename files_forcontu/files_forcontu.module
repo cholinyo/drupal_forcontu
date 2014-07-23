@@ -1,0 +1,14 @@
+<?php
+/**
+* Implements hook_cron().
+*/
+function files_forcontu_cron() {
+	$directory='public://copias';
+	file_prepare_directory($directory, $options = FILE_CREATE_DIRECTORY);
+	dpm("hola");
+	$dir='private://';
+	$mask='/^.*\.*$/';
+    $result=file_scan_directory($dir,$mask, $options = array('recurse' =>TRUE));
+	dpm ($result);
+	
+}

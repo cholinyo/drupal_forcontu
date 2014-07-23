@@ -1,0 +1,68 @@
+<?php
+/**
+* @file
+* Módulo de ejemplo
+* Este módulo presenta un mensaje de bienvenda al usuario en un 
+bloque.
+*/
+/**
+* Implements hook_block_info().
+*/
+function first_example_block_info() {
+//Declaración del bloque
+$blocks['welcome'] = array(
+'info' => t('My first module: welcome block'),
+'cache' => DRUPAL_NO_CACHE,
+);
+return $blocks;
+}
+/**
+* Implements hook_block_view().
+*/
+function first_example_block_view($delta = '') {
+//Implementación del bloque 'welcome' definido en el hook_block_info.
+$block = array();
+switch ($delta) {
+case 'welcome':
+$block['subject'] = t('My first module');
+$block['content'] = t('Welcome to my Drupal site.');
+break;
+}
+return $block;
+}
+
+/**
+* Implements hook_help().
+*/
+function first_example_help($path, $arg) {
+switch ($path) {
+// Ayuda general para el módulo First example
+case 'admin/help#first_example':
+return '<p>' . t('This module shows a welcome message into a 
+block.') . '</p>';
+// Ayuda particular que se mostrará en el área de administración de bloques 
+case 'admin/structure/block':
+return '<p>' . t('Use the block Welcome block to show a 
+welcome message.') . '</p>';
+case 'user/%':
+if ($arg[1] == '1') {
+return '<p>' . t('Activating the module First example, the users of the site will receive a message of welcome.') . '</p>';}
+} 
+}
+/**
+* Implements hook_menu().
+*/
+function first_example_menu() {
+$items['admin/config/content/first_example'] = array(
+'title' => 'First Example',
+'description' => 'Settings for module First example',
+'page callback' => 'drupal_get_form',
+'page arguments' => array('first_example_admin_settings'),
+'access callback' => 'user_access',
+'access arguments' => array('administer site configuration'),
+'type' => MENU_NORMAL_ITEM,
+'file' => 'first_example.admin.inc',
+);
+return $items;
+}
+

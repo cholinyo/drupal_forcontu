@@ -1,0 +1,273 @@
+<?php
+/**
+* @file
+* Nodes Forcontu
+*/
+/**
+* Implements hook_node_info().
+*/
+function nodes_forcontu_node_info() {
+return array(
+'myproduct' => array(
+'name' => t('My product'),
+'base' => 'nodes_forcontu',
+'description' => t('Example node type.'),
+'title_label' => t('Product name'),
+)
+);
+}
+/**
+* Implements hook_form().
+*/
+function nodes_forcontu_form($node, &$form_state) {
+$type = node_type_get_type($node);
+if ($type->has_title) {
+$form['title'] = array(
+'#type' => 'textfield',
+'#title' => check_plain($type->title_label),
+'#required' => TRUE,
+'#default_value' => !empty($node->title) ? $node->title : '',
+'#maxlength' => 255,
+'#weight' => -5
+);
+}
+$form['information'] = array(
+'#type' => 'fieldset',
+'#title' => t('Product information'),
+'#collapsible' => TRUE,
+'#collapsed' => FALSE,
+'#weight' => 99,
+'#group' => 'additional_settings'
+);
+$form['information']['price'] = array(
+'#type' => 'textfield',
+'#title' => t('Price'),
+'#required' => FALSE,
+'#default_value' => isset($node->price) ? $node->price : 0,
+'#description' => t("Product's price (Euro)."),
+'#weight' => 1,
+'#size' => 20,
+'#maxlength' => 35,
+);
+$form['information']['weight'] = array(
+'#type' => 'textfield',
+'#title' => t('Weight'),
+'#default_value' => isset($node->weight) ? $node->weight : 0,
+'#description' => t("Product's weight (Kg)."),
+'#weight' => 2,
+'#size' => 10,
+'#maxlength' => 15,
+);
+$form['information']['dimensions'] = array(
+'#type' => 'fieldset',
+'#title' => t('Dimensions'),
+'#description' =>   t ( 'Physical dimensions of the packaged product (c m).' ),
+'#weight' => 3,
+);
+$form['information']['dimensions']['length'] = array(
+'#type' => 'textfield',
+'#title' => t('Length'),
+'#default_value' => isset($node->length) ? $node->length : '',
+'#weight' => 1,
+'#size' => 10,
+);
+$form['information']['dimensions']['width'] = array(
+'#type' => 'textfield',
+'#title' => t('Width'),
+'#default_value' => isset($node->width) ? $node->width : '',
+'#weight' => 2,
+'#size' => 10,
+);
+$form['information']['dimensions']['height'] = array(
+'#type' => 'textfield',
+'#title' => t('Height'),
+'#default_value' => isset($node->height) ? $node->height : '',
+'#weight' => 3,
+'#size' => 10,
+);
+return $form;
+}
+
+
+/**
+* Implements hook_validate().
+*/
+function nodes_forcontu_validate($node, $form, &$form_state){
+$pattern = '/^\d*(\.\d*)?$/';
+if (!empty($node->price) && !is_numeric($node->price) &&
+!preg_match($pattern, $node->price)) {
+form_set_error('price', t('Price must be in a valid number 
+format. No commas and only one decimal point.'));
+}
+if (!empty($node->$weight) && (!is_numeric($node->$weight) ||
+$node->$weight < 0)) {
+form_set_error('weight', t('Weight must be a positive 
+number.'));
+}
+if (!empty($node->$length) && (!is_numeric($node->$length) ||
+$node->$length < 0)) {
+form_set_error('length', t('Length must be a positive 
+number.'));
+}
+if (!empty($node->$width) && (!is_numeric($node->$width) ||
+$node->$width < 0)) {
+form_set_error('width', t('Width must be a positive 
+number.'));
+}
+if (!empty($node->$height) && (!is_numeric($node->$height) ||
+$node->$height < 0)) {
+form_set_error('height', t('Height must be a positive 
+number.'));
+}
+}
+
+/**
+* Implements hook_view().
+*/
+function nodes_forcontu_view($node, $view_mode) {
+$node->content['price'] = array(
+'#markup' => theme('nodes_forcontu_price', array ('price' => $node->price)),
+'#weight' => 1,
+);
+$node->content['weight'] = array(
+'#markup' => theme('nodes_forcontu_weight',array ('weight' => $node->weight)),
+'#weight' => 2,
+);
+$node->content['dimensions'] = array(
+'#markup' => theme('nodes_forcontu_dimensions',
+array('length' => $node->length,
+'width' => $node->width,
+'height' => $node->height)),
+'#weight' => 3,
+);
+return $node;
+}
+
+/**
+* Implements hook_theme().
+*/
+function nodes_forcontu_theme($existing, $type, $theme, $path) {
+return array(
+'nodes_forcontu_price' => array(
+'variables' => array('price' => 0),
+),
+'nodes_forcontu_weight' => array(
+'variables' => array('weight' => 0),
+),
+'nodes_forcontu_dimensions' => array(
+'variables' => array ('length'  => 0, 'width' => 0, 'height' => 0),
+),
+);
+}
+
+/**
+* Devuelve la salida HTML para el elemento Precio.
+*
+* @param $variables
+* An associative array containing:
+*  - price: precio en euros.
+*
+* @ingroup themeable
+*/
+function theme_nodes_forcontu_price($variables){
+$output = '<div class="product-price">';
+$output .= t('Price') . ': ' . $variables['price'] . ' €';
+$output .= '</div>';
+return $output;
+}
+/**
+* Devuelve la salida HTML para el elemento Peso.
+*
+* @param $variables
+* An associative array containing:
+*  - peso: peso en kg.
+*
+* @ingroup themeable
+*/
+function theme_nodes_forcontu_weight($variables){
+$output = '<div class="product-weight">';
+$output .= t('Weight') . ': ' . $variables['weight'] . ' Kg.';
+$output .= '</div>';
+return $output;
+}
+/**
+* Devuelve la salida HTML con las Dimensiones (Largo x Ancho x Alto).
+*
+* @param $variables
+* An associative array containing:
+*  - length: largo (cm).
+*  - width: ancho (cm).
+*  - height: alto (cm).
+*
+* @ingroup themeable
+*/
+function theme_nodes_forcontu_dimensions($variables){
+$output = '<div class="product-dimensions">';
+$output .= t('Dimensions (length x width x height)') . ': ' .
+$variables['length'] . 'x' . $variables['width'] . 'x' .
+$variables['height'] . ' cm.'  ;
+$output .= '</div>';
+return $output;
+}
+
+
+
+
+/**
+* Implements hook_insert().
+*
+*/
+function nodes_forcontu_insert($node) {
+db_insert('nodes_forcontu')
+->fields(array(
+'nid' => $node->nid,
+'price' => $node->price,
+'weight' => $node->weight,
+'length' => $node->length,
+'width' => $node->width,
+'height' => $node->height,
+))
+->execute();
+}
+
+/**
+* Implements hook_update().
+*/
+function nodes_forcontu_update($node) {
+db_update('nodes_forcontu')
+->fields(array(
+'price' => $node->price,
+'weight' => $node->weight,
+'length' => $node->length,
+'width' => $node->width,
+'height' => $node->height,
+))
+->condition('nid', $node->nid)
+->execute();
+}
+
+/**
+* Implements hook_delete().
+*/
+function nodes_forcontu_delete($node) {
+db_delete('nodes_forcontu')
+->condition('nid', $node->nid)
+->execute();
+}
+
+/**
+* Implements hook_load().
+*/
+function nodes_forcontu_load($nodes) {
+$result = db_query('SELECT nid, price, weight, length, width, 
+height FROM {nodes_forcontu} WHERE nid IN (:nids)', array(':nids'
+=> array_keys($nodes)));
+foreach ($result as $record) {
+$nodes[$record->nid]->price = $record->price;
+$nodes[$record->nid]->weight = $record->weight;
+$nodes[$record->nid]->length = $record->length;
+$nodes[$record->nid]->width = $record->width;
+$nodes[$record->nid]->height = $record->height;
+}
+}
+

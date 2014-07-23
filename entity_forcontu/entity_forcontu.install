@@ -1,0 +1,81 @@
+<?php
+/**
+ * @file
+ * Install nodes forcontu
+ */
+/**
+* Implements hook_install().
+*/
+function entity_forcontu_install() {
+	$field = field_info_field('item_body');
+if (empty($field)) {
+$field = array(
+'field_name' => 'item_body',
+'type' => 'text_with_summary',
+'entity_types' => array('entity_forcontu_item'),
+);
+$field = field_create_field($field);
+}
+$instance = field_info_instance('entity_forcontu_item',
+'item_body', 'general_bundle');
+if (empty($instance)) {
+$instance = array(
+'field_name' => 'item_body',
+'entity_type' => 'entity_forcontu_item',
+'bundle' => 'general_bundle',
+'label' => 'Body',
+'widget' => array('type' => 'text_textarea_with_summary'),
+'settings' => array('display_summary' => TRUE),
+'display' => array(
+'default' => array(
+'label' => 'hidden',
+'type' => 'text_default',
+),
+'full' => array(
+'label' => 'hidden',
+'type' => 'text_summary_or_trimmed',
+),
+),
+);
+$instance = field_create_instance($instance);
+}
+}
+
+/**
+* Implements hook_schema()
+*/
+function entity_forcontu_schema() {
+$schema = array();
+$schema['entity_forcontu_item'] = array(
+'description' => 'Tabla base para la entidad Item.',
+'fields' => array(
+'item_id' => array(
+'description' => 'ID de la entidad.',
+'type' => 'serial',
+'unsigned' => TRUE,
+'not null' => TRUE,
+),
+'bundle_type' => array(
+'description' => 'Tipo de bundle',
+'type' => 'text',
+'size' => 'medium',
+'not null' => TRUE
+),
+'item_description' => array(
+'description' => 'Descripción del elemento.',
+'type' => 'varchar',
+'length' => 255,
+'not null' => TRUE,
+'default' => '',
+),
+'created' => array(
+'description' => 'Fecha de creación de la entidad.',
+'type' => 'int',
+'not null' => TRUE,
+'default' => 0,
+),
+),
+'primary key' => array('item_id'),
+);
+return $schema;
+}

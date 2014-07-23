@@ -1,0 +1,6 @@
+name = Entity Forcontu
+description = An example of advanced uses of the menu APIs Entity
+package = My modules
+core = 7.x
+files[] = entity_forcontu.module
+files[] = entity_forcontu.install

@@ -1,0 +1,109 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  nodes_forcontu.module: n/a
+#  nodes_forcontu.info: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2013-08-21 21:11+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: nodes_forcontu.module:12
+msgid "My product"
+msgstr ""
+
+#: nodes_forcontu.module:14
+msgid "Example node type."
+msgstr ""
+
+#: nodes_forcontu.module:15
+msgid "Product name"
+msgstr ""
+
+#: nodes_forcontu.module:36
+msgid "Product information"
+msgstr ""
+
+#: nodes_forcontu.module:44;174
+msgid "Price"
+msgstr ""
+
+#: nodes_forcontu.module:47
+msgid "Product's price (Euro)."
+msgstr ""
+
+#: nodes_forcontu.module:54;189
+msgid "Weight"
+msgstr ""
+
+#: nodes_forcontu.module:56
+msgid "Product's weight (Kg)."
+msgstr ""
+
+#: nodes_forcontu.module:63
+msgid "Dimensions"
+msgstr ""
+
+#: nodes_forcontu.module:64
+msgid "Physical dimensions of the packaged product (c m)."
+msgstr ""
+
+#: nodes_forcontu.module:69
+msgid "Length"
+msgstr ""
+
+#: nodes_forcontu.module:76
+msgid "Width"
+msgstr ""
+
+#: nodes_forcontu.module:83
+msgid "Height"
+msgstr ""
+
+#: nodes_forcontu.module:99
+msgid "Price must be in a valid number \r\nformat. No commas and only one decimal point."
+msgstr ""
+
+#: nodes_forcontu.module:104
+msgid "Weight must be a positive \r\nnumber."
+msgstr ""
+
+#: nodes_forcontu.module:109
+msgid "Length must be a positive \r\nnumber."
+msgstr ""
+
+#: nodes_forcontu.module:114
+msgid "Width must be a positive \r\nnumber."
+msgstr ""
+
+#: nodes_forcontu.module:119
+msgid "Height must be a positive \r\nnumber."
+msgstr ""
+
+#: nodes_forcontu.module:206
+msgid "Dimensions (length x width x height)"
+msgstr ""
+
+#: nodes_forcontu.info:0
+msgid "Nodes Forcontu"
+msgstr ""
+
+#: nodes_forcontu.info:0
+msgid "An example of advanced uses of the menu APIs Nodes"
+msgstr ""
+
+#: nodes_forcontu.info:0
+msgid "My modules"
+msgstr ""
+
